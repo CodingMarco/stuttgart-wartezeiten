@@ -120,7 +120,9 @@ def insert_data(db, data: list[dict]):
 
 def main():
     logger.info("Starting waiting time scraper...")
-    engine = create_engine("sqlite:///waiting_times.sqlite")
+    data_dir = Path("data")
+    data_dir.mkdir(parents=True, exist_ok=True)
+    engine = create_engine("sqlite:///data/waiting_times.sqlite")
     setup_db_once(engine)
 
     while True:
