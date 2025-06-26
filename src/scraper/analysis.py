@@ -1,0 +1,209 @@
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import pandas as pd
+import datetime as dt
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from models import Status, Office, WaitingTime, Snapshot
+
+
+def create_waiting_times_chart():
+    """Create a chart showing waiting times for all offices over the last day."""
+
+    # Connect to the database
+    engine = create_engine("sqlite:///data/waiting_times.sqlite")
+
+    # Calculate the time range (last 24 hours)
+    now = dt.datetime.now(dt.timezone.utc)
+    yesterday = now - dt.timedelta(days=1)
+
+    with Session(engine) as db:
+        # Query waiting times for the last day
+        query = (
+            db.query(
+                Snapshot.captured_at,
+                Office.label.label("office_name"),
+                Status.meaning.label("status_meaning"),
+                Status.id.label("status_id"),
+            )
+            .join(WaitingTime, Snapshot.id == WaitingTime.snapshot_id)
+            .join(Office, WaitingTime.office_id == Office.id)
+            .join(Status, WaitingTime.status_id == Status.id)
+            .filter(Snapshot.captured_at >= yesterday)
+            .order_by(Snapshot.captured_at, Office.label)
+        )
+
+        results = query.all()
+
+        if not results:
+            print("No data found for the last 24 hours.")
+            return
+
+        # Convert to pandas DataFrame for easier manipulation
+        df = pd.DataFrame(
+            [
+                {
+                    "timestamp": row.captured_at,
+                    "office": row.office_name,
+                    "status": row.status_meaning,
+                    "status_id": row.status_id,
+                }
+                for row in results
+            ]
+        )
+
+        # Convert timestamp to datetime if it's not already
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+        # Create the plot
+        fig, ax = plt.subplots(figsize=(15, 10))
+
+        # Get unique offices
+        offices = df["office"].unique()
+
+        # Create a color map for different offices
+        import numpy as np
+
+        colors = plt.get_cmap("tab10")(np.linspace(0, 1, len(offices)))
+
+        # Plot each office's waiting times
+        for i, office in enumerate(offices):
+            office_data = df[df["office"] == office].copy()
+            office_data = office_data.sort_values("timestamp")
+
+            # Convert status to numeric for plotting (use status_id)
+            ax.plot(
+                office_data["timestamp"],
+                office_data["status_id"],
+                label=office,
+                color=colors[i],
+                linewidth=1.5,
+                alpha=0.7,
+            )
+
+        # Customize the plot
+        ax.set_xlabel("Time", fontsize=12)
+        ax.set_ylabel("Waiting Time Status", fontsize=12)
+        ax.set_title(
+            "Waiting Times for All Offices - Last 24 Hours",
+            fontsize=14,
+            fontweight="bold",
+        )
+
+        # Format x-axis to show time nicely
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+        ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
+        plt.xticks(rotation=45)
+
+        # Create custom y-axis labels based on status meanings
+        status_labels = db.query(Status.id, Status.meaning).all()
+        status_dict = {status.id: status.meaning for status in status_labels}
+
+        # Set y-axis ticks and labels
+        y_ticks = sorted(status_dict.keys())
+        y_labels = [status_dict[tick] for tick in y_ticks]
+        ax.set_yticks(y_ticks)
+        ax.set_yticklabels(y_labels, fontsize=10)
+
+        # Add legend
+        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=10)
+
+        # Add grid for better readability
+        ax.grid(True, alpha=0.3)
+
+        # Adjust layout to prevent legend cutoff
+        plt.tight_layout()
+
+        # Show the plot
+        plt.show()
+
+        # Print some statistics
+        print("\nData Summary:")
+        print(f"Time range: {df['timestamp'].min()} to {df['timestamp'].max()}")
+        print(f"Number of offices: {len(offices)}")
+        print(f"Total data points: {len(df)}")
+        print(f"Offices included: {', '.join(offices)}")
+
+
+def create_average_waiting_times_chart():
+    """Create a chart showing average waiting times by hour for all offices."""
+
+    engine = create_engine("sqlite:///data/waiting_times.sqlite")
+    now = dt.datetime.now(dt.timezone.utc)
+    yesterday = now - dt.timedelta(days=1)
+
+    with Session(engine) as db:
+        query = (
+            db.query(
+                Snapshot.captured_at,
+                Office.label.label("office_name"),
+                Status.id.label("status_id"),
+            )
+            .join(WaitingTime, Snapshot.id == WaitingTime.snapshot_id)
+            .join(Office, WaitingTime.office_id == Office.id)
+            .join(Status, WaitingTime.status_id == Status.id)
+            .filter(Snapshot.captured_at >= yesterday)
+            .order_by(Snapshot.captured_at)
+        )
+
+        results = query.all()
+
+        if not results:
+            print("No data found for the last 24 hours.")
+            return
+
+        df = pd.DataFrame(
+            [
+                {
+                    "timestamp": row.captured_at,
+                    "office": row.office_name,
+                    "status_id": row.status_id,
+                }
+                for row in results
+            ]
+        )
+
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["hour"] = df["timestamp"].dt.hour
+
+        # Calculate average waiting time by hour and office
+        hourly_avg = df.groupby(["hour", "office"])["status_id"].mean().reset_index()
+
+        # Create the plot
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        offices = hourly_avg["office"].unique()
+        import numpy as np
+
+        colors = plt.get_cmap("tab10")(np.linspace(0, 1, len(offices)))
+
+        for i, office in enumerate(offices):
+            office_data = hourly_avg[hourly_avg["office"] == office]
+            ax.plot(
+                office_data["hour"],
+                office_data["status_id"],
+                label=office,
+                color=colors[i],
+                linewidth=2,
+            )
+
+        ax.set_xlabel("Hour of Day", fontsize=12)
+        ax.set_ylabel("Average Waiting Time Status", fontsize=12)
+        ax.set_title(
+            "Average Waiting Times by Hour - Last 24 Hours",
+            fontsize=14,
+            fontweight="bold",
+        )
+        ax.set_xticks(range(0, 24))
+        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+        ax.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        plt.show()
+
+
+if __name__ == "__main__":
+    print("Creating waiting times analysis charts...")
+    create_waiting_times_chart()
+    print("\nCreating average waiting times by hour...")
+    create_average_waiting_times_chart()
