@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 import json
 import random
@@ -114,19 +116,40 @@ def insert_data(db, data: list[dict]):
     db.commit()
 
 
+def all_offices_closed(data):
+    return all(entry["status"] == 0 for entry in data)
+
+
+def it_is_nighttime():
+    now = datetime.datetime.now()
+    return now.hour < 5 or now.hour > 22
+
+
 def main():
     logger.info("Starting waiting time scraper...")
     data_dir = Path("data")
     data_dir.mkdir(parents=True, exist_ok=True)
     engine = create_engine("sqlite:///data/waiting_times.sqlite")
     setup_db_once(engine)
+    logger.debug("Database setup completed.")
 
     while True:
         wait_for_next_minute()
+
+        if it_is_nighttime():
+            logger.debug("It's nighttime, skipping data ingestion.")
+            continue
+
         try:
             data = fetch_and_check_json()
+
+            if all_offices_closed(data):
+                logger.debug("All offices are closed, skipping data ingestion.")
+                continue
+
             with Session(engine) as db:
                 insert_data(db, data)
+
         except Exception as e:
             logger.error(f"Error during data ingestion: {e}")
 
@@ -134,5 +157,11 @@ def main():
 
 
 if __name__ == "__main__":
-    logger.add("scraper.log", rotation="1 MB", level="INFO")
+    is_debug = os.getenv("DEBUG", "0") == "1" or os.getenv("DEBUG", "0") == "true"
+    loglevel = "DEBUG" if is_debug else "INFO"
+
+    logger.remove()
+    logger.add(sys.stderr, level=loglevel)
+    logger.add("scraper.log", rotation="1 MB", level=loglevel)
+
     main()
