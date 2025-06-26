@@ -7,6 +7,6 @@ services:
     restart: always
     volumes:
       # Mount a volume to persist database and log files
-      - ./scraper_data:/app
+      - ./scraper_data:/app/data
     environment:
       - PYTHONUNBUFFERED=1

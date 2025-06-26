@@ -10,7 +10,7 @@ services:
     restart: always
     volumes:
       # Mount a volume to persist database and log files
-      - ./data/scraper:/app
+      - ./scraper_data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
     networks:
@@ -27,7 +27,7 @@ services:
   #   depends_on:
   #     - scraper
   #   volumes:
-  #     - ./data/scraper:/app/data:ro  # Read-only access to scraper data
+  #     - ./scraper_data:/app/data:ro  # Read-only access to scraper data
   #   networks:
   #     - stuttgart-network
 
