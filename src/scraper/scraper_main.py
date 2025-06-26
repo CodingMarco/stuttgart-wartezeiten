@@ -124,6 +124,7 @@ def main():
     setup_db_once(engine)
 
     while True:
+        wait_for_next_minute()
         try:
             data = fetch_and_check_json()
             with Session(engine) as db:
@@ -132,7 +133,6 @@ def main():
             logger.error(f"Error during data ingestion: {e}")
 
         logger.debug("Data ingestion completed, waiting for the next minute...")
-        wait_for_next_minute()
 
 
 if __name__ == "__main__":
