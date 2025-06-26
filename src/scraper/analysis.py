@@ -13,6 +13,7 @@ from models import Status, Office, WaitingTime, Snapshot
 def make_legend_interactive(ax, legend):
     """
     Make a legend interactive - clicking on legend entries will hide/show the corresponding lines.
+    Starts with all plots hidden except for the first one.
 
     Args:
         ax: matplotlib axis object
@@ -25,10 +26,18 @@ def make_legend_interactive(ax, legend):
     lines = ax.get_lines()
 
     # Create mapping between legend lines and plot lines
-    for legline, origline in zip(legend.get_lines(), lines):
+    for i, (legline, origline) in enumerate(zip(legend.get_lines(), lines)):
         legline.set_picker(True)  # Enable picking on legend lines
         legline.set_pickradius(10)  # Set pick radius for easier clicking
         lined[legline] = origline
+
+        # Hide all lines except the first one on initialization
+        if i > 0:
+            origline.set_visible(False)
+            legline.set_alpha(0.3)
+        else:
+            origline.set_visible(True)
+            legline.set_alpha(1.0)
 
     def on_pick(event):
         """Handle pick events on legend lines."""
@@ -52,6 +61,9 @@ def make_legend_interactive(ax, legend):
     ax.figure.canvas.mpl_connect("pick_event", on_pick)
 
     print("Legend is now interactive! Click on legend entries to hide/show lines.")
+    print(
+        "Starting with only the first plot visible - click legend entries to show/hide others."
+    )
 
 
 def get_system_timezone():

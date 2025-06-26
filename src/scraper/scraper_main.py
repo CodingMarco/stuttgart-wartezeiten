@@ -17,16 +17,12 @@ STATUS_VALUES = [
     (2, "30 min"),
     (3, "45 min"),
     (4, "60 min"),
-    (5, "90 min"),
-    (6, "120 min"),
-    (7, "180 min"),
+    (5, "75 min"),
+    (6, "90 min"),
+    (7, "105 min"),
     (8, "120 min"),
-    (10, "very long"),
-    (11, "very long"),
-    (12, "very long"),
-    (13, "very long"),
-    (14, "very long"),
-    (15, "no waiting stamps left"),
+    (10, "> 120 min"),
+    (11, "no waiting stamps left"),
 ]
 
 
