@@ -7,6 +7,26 @@ from sqlalchemy.orm import Session
 from models import Status, Office, WaitingTime, Snapshot
 
 
+def get_system_timezone():
+    """Get the system's local timezone."""
+    return dt.datetime.now().astimezone().tzinfo
+
+
+def convert_utc_to_local(timestamp, local_tz=None):
+    """Convert UTC timestamp to local timezone."""
+    if local_tz is None:
+        local_tz = get_system_timezone()
+
+    # Ensure timestamp is timezone-aware UTC
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=dt.timezone.utc)
+    elif timestamp.tzinfo != dt.timezone.utc:
+        timestamp = timestamp.astimezone(dt.timezone.utc)
+
+    # Convert to local timezone
+    return timestamp.astimezone(local_tz)
+
+
 def create_waiting_times_chart():
     """Create a chart showing waiting times for all offices over the last day."""
 
@@ -52,8 +72,12 @@ def create_waiting_times_chart():
             ]
         )
 
-        # Convert timestamp to datetime if it's not already
+        # Convert timestamp to datetime and convert from UTC to local timezone
         df["timestamp"] = pd.to_datetime(df["timestamp"])
+        local_tz = get_system_timezone()
+        df["timestamp_local"] = df["timestamp"].apply(
+            lambda x: convert_utc_to_local(x, local_tz)
+        )
 
         # Create the plot
         fig, ax = plt.subplots(figsize=(15, 10))
@@ -69,11 +93,11 @@ def create_waiting_times_chart():
         # Plot each office's waiting times
         for i, office in enumerate(offices):
             office_data = df[df["office"] == office].copy()
-            office_data = office_data.sort_values("timestamp")
+            office_data = office_data.sort_values("timestamp_local")
 
             # Convert status to numeric for plotting (use status_id)
             ax.plot(
-                office_data["timestamp"],
+                office_data["timestamp_local"],
                 office_data["status_id"],
                 label=office,
                 color=colors[i],
@@ -82,17 +106,19 @@ def create_waiting_times_chart():
             )
 
         # Customize the plot
-        ax.set_xlabel("Time", fontsize=12)
+        ax.set_xlabel("Time (Local)", fontsize=12)
         ax.set_ylabel("Waiting Time Status", fontsize=12)
         ax.set_title(
-            "Waiting Times for All Offices - Last 24 Hours",
+            "Waiting Times for All Offices - Last 24 Hours (Local Time)",
             fontsize=14,
             fontweight="bold",
         )
 
-        # Format x-axis to show time nicely
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+        # Format x-axis to show time nicely with local timezone
+        local_tz = get_system_timezone()
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=local_tz))
         ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
+
         plt.xticks(rotation=45)
 
         # Create custom y-axis labels based on status meanings
@@ -118,8 +144,11 @@ def create_waiting_times_chart():
         plt.show()
 
         # Print some statistics
+        local_tz = get_system_timezone()
         print("\nData Summary:")
-        print(f"Time range: {df['timestamp'].min()} to {df['timestamp'].max()}")
+        print(
+            f"Time range (local {local_tz}): {df['timestamp_local'].min()} to {df['timestamp_local'].max()}"
+        )
         print(f"Number of offices: {len(offices)}")
         print(f"Total data points: {len(df)}")
         print(f"Offices included: {', '.join(offices)}")
@@ -164,7 +193,11 @@ def create_average_waiting_times_chart():
         )
 
         df["timestamp"] = pd.to_datetime(df["timestamp"])
-        df["hour"] = df["timestamp"].dt.hour
+        local_tz = get_system_timezone()
+        df["timestamp_local"] = df["timestamp"].apply(
+            lambda x: convert_utc_to_local(x, local_tz)
+        )
+        df["hour"] = df["timestamp_local"].dt.hour
 
         # Calculate average waiting time by hour and office
         hourly_avg = df.groupby(["hour", "office"])["status_id"].mean().reset_index()
@@ -187,10 +220,10 @@ def create_average_waiting_times_chart():
                 linewidth=2,
             )
 
-        ax.set_xlabel("Hour of Day", fontsize=12)
+        ax.set_xlabel("Hour of Day (Local Time)", fontsize=12)
         ax.set_ylabel("Average Waiting Time Status", fontsize=12)
         ax.set_title(
-            "Average Waiting Times by Hour - Last 24 Hours",
+            "Average Waiting Times by Hour - Last 24 Hours (Local Time)",
             fontsize=14,
             fontweight="bold",
         )
