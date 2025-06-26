@@ -6,6 +6,53 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from models import Status, Office, WaitingTime, Snapshot
 
+# Analysis module for Stuttgart waiting times data
+# Features interactive legends - click on legend entries to hide/show corresponding lines
+
+
+def make_legend_interactive(ax, legend):
+    """
+    Make a legend interactive - clicking on legend entries will hide/show the corresponding lines.
+
+    Args:
+        ax: matplotlib axis object
+        legend: matplotlib legend object
+    """
+    # Dictionary to keep track of original line visibility and properties
+    lined = {}
+
+    # Get all lines from the plot
+    lines = ax.get_lines()
+
+    # Create mapping between legend lines and plot lines
+    for legline, origline in zip(legend.get_lines(), lines):
+        legline.set_picker(True)  # Enable picking on legend lines
+        legline.set_pickradius(10)  # Set pick radius for easier clicking
+        lined[legline] = origline
+
+    def on_pick(event):
+        """Handle pick events on legend lines."""
+        legline = event.artist
+        origline = lined[legline]
+
+        # Toggle visibility
+        visible = not origline.get_visible()
+        origline.set_visible(visible)
+
+        # Change legend line appearance to reflect state
+        if visible:
+            legline.set_alpha(1.0)
+        else:
+            legline.set_alpha(0.3)
+
+        # Redraw the plot
+        ax.figure.canvas.draw()
+
+    # Connect the pick event to our handler
+    ax.figure.canvas.mpl_connect("pick_event", on_pick)
+
+    print("Legend is now interactive! Click on legend entries to hide/show lines.")
+
 
 def get_system_timezone():
     """Get the system's local timezone."""
@@ -132,7 +179,10 @@ def create_waiting_times_chart():
         ax.set_yticklabels(y_labels, fontsize=10)
 
         # Add legend
-        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=10)
+        legend = ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=10)
+
+        # Make the legend interactive
+        make_legend_interactive(ax, legend)
 
         # Add grid for better readability
         ax.grid(True, alpha=0.3)
@@ -228,7 +278,11 @@ def create_average_waiting_times_chart():
             fontweight="bold",
         )
         ax.set_xticks(range(0, 24))
-        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+
+        # Add legend and make it interactive
+        legend = ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+        make_legend_interactive(ax, legend)
+
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
