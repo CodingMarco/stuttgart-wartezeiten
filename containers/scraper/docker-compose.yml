@@ -1,0 +1,12 @@
+services:
+  scraper:
+    build: 
+      context: ../../
+      dockerfile: containers/scraper/Dockerfile
+    container_name: stuttgart-scraper
+    restart: always
+    volumes:
+      # Mount a volume to persist database and log files
+      - ./scraper_data:/app
+    environment:
+      - PYTHONUNBUFFERED=1
