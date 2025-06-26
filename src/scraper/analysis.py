@@ -44,15 +44,28 @@ def make_legend_interactive(ax, legend):
         legline = event.artist
         origline = lined[legline]
 
-        # Toggle visibility
-        visible = not origline.get_visible()
-        origline.set_visible(visible)
-
-        # Change legend line appearance to reflect state
-        if visible:
-            legline.set_alpha(1.0)
+        # Check if Shift key is pressed
+        if hasattr(event, "mouseevent") and event.mouseevent.key == "shift":
+            # Shift+click: Show only this plot, hide all others
+            for leg, line in lined.items():
+                if leg == legline:
+                    # Show the clicked line
+                    line.set_visible(True)
+                    leg.set_alpha(1.0)
+                else:
+                    # Hide all other lines
+                    line.set_visible(False)
+                    leg.set_alpha(0.3)
         else:
-            legline.set_alpha(0.3)
+            # Normal click: Toggle visibility
+            visible = not origline.get_visible()
+            origline.set_visible(visible)
+
+            # Change legend line appearance to reflect state
+            if visible:
+                legline.set_alpha(1.0)
+            else:
+                legline.set_alpha(0.3)
 
         # Redraw the plot
         ax.figure.canvas.draw()
@@ -64,6 +77,7 @@ def make_legend_interactive(ax, legend):
     print(
         "Starting with only the first plot visible - click legend entries to show/hide others."
     )
+    print("Hold Shift while clicking to show only that plot and hide all others.")
 
 
 def get_system_timezone():
