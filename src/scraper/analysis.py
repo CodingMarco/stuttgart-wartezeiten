@@ -85,6 +85,22 @@ def get_system_timezone():
     return dt.datetime.now().astimezone().tzinfo
 
 
+def get_today_6am_utc():
+    """Get today's 6am local time converted to UTC."""
+    local_tz = get_system_timezone()
+
+    # Get current local time
+    now_local = dt.datetime.now(local_tz)
+
+    # Create today at 6am local time
+    today_6am_local = now_local.replace(hour=6, minute=0, second=0, microsecond=0)
+
+    # Convert to UTC for database queries
+    today_6am_utc = today_6am_local.astimezone(dt.timezone.utc)
+
+    return today_6am_utc
+
+
 def convert_utc_to_local(timestamp, local_tz=None):
     """Convert UTC timestamp to local timezone."""
     if local_tz is None:
@@ -101,17 +117,16 @@ def convert_utc_to_local(timestamp, local_tz=None):
 
 
 def create_waiting_times_chart():
-    """Create a chart showing waiting times for all offices over the last day."""
+    """Create a chart showing waiting times for all offices from today at 6am local time."""
 
     # Connect to the database
     engine = create_engine("sqlite:///data/waiting_times.sqlite")
 
-    # Calculate the time range (last 24 hours)
-    now = dt.datetime.now(dt.timezone.utc)
-    yesterday = now - dt.timedelta(days=1)
+    # Calculate the time range (from today at 6am local time)
+    start_time = get_today_6am_utc()
 
     with Session(engine) as db:
-        # Query waiting times for the last day
+        # Query waiting times from today at 6am
         query = (
             db.query(
                 Snapshot.captured_at,
@@ -122,14 +137,14 @@ def create_waiting_times_chart():
             .join(WaitingTime, Snapshot.id == WaitingTime.snapshot_id)
             .join(Office, WaitingTime.office_id == Office.id)
             .join(Status, WaitingTime.status_id == Status.id)
-            .filter(Snapshot.captured_at >= yesterday)
+            .filter(Snapshot.captured_at >= start_time)
             .order_by(Snapshot.captured_at, Office.label)
         )
 
         results = query.all()
 
         if not results:
-            print("No data found for the last 24 hours.")
+            print("No data found from today at 6am local time.")
             return
 
         # Convert to pandas DataFrame for easier manipulation
@@ -182,7 +197,7 @@ def create_waiting_times_chart():
         ax.set_xlabel("Time (Local)", fontsize=12)
         ax.set_ylabel("Waiting Time Status", fontsize=12)
         ax.set_title(
-            "Waiting Times for All Offices - Last 24 Hours (Local Time)",
+            "Waiting Times for All Offices - From Today 6am (Local Time)",
             fontsize=14,
             fontweight="bold",
         )
@@ -231,11 +246,10 @@ def create_waiting_times_chart():
 
 
 def create_average_waiting_times_chart():
-    """Create a chart showing average waiting times by hour for all offices."""
+    """Create a chart showing average waiting times by hour for all offices from today at 6am local time."""
 
     engine = create_engine("sqlite:///data/waiting_times.sqlite")
-    now = dt.datetime.now(dt.timezone.utc)
-    yesterday = now - dt.timedelta(days=1)
+    start_time = get_today_6am_utc()
 
     with Session(engine) as db:
         query = (
@@ -247,14 +261,14 @@ def create_average_waiting_times_chart():
             .join(WaitingTime, Snapshot.id == WaitingTime.snapshot_id)
             .join(Office, WaitingTime.office_id == Office.id)
             .join(Status, WaitingTime.status_id == Status.id)
-            .filter(Snapshot.captured_at >= yesterday)
+            .filter(Snapshot.captured_at >= start_time)
             .order_by(Snapshot.captured_at)
         )
 
         results = query.all()
 
         if not results:
-            print("No data found for the last 24 hours.")
+            print("No data found from today at 6am local time.")
             return
 
         df = pd.DataFrame(
@@ -299,7 +313,7 @@ def create_average_waiting_times_chart():
         ax.set_xlabel("Hour of Day (Local Time)", fontsize=12)
         ax.set_ylabel("Average Waiting Time Status", fontsize=12)
         ax.set_title(
-            "Average Waiting Times by Hour - Last 24 Hours (Local Time)",
+            "Average Waiting Times by Hour - From Today 6am (Local Time)",
             fontsize=14,
             fontweight="bold",
         )
