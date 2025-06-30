@@ -1,3 +1,4 @@
+import common
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
@@ -120,7 +121,7 @@ def create_waiting_times_chart():
     """Create a chart showing waiting times for all offices from today at 6am local time."""
 
     # Connect to the database
-    engine = create_engine("sqlite:///data/waiting_times.sqlite")
+    engine = create_engine(common.get_db_path())
 
     # Calculate the time range (from today at 6am local time)
     start_time = get_today_6am_utc()
@@ -248,7 +249,7 @@ def create_waiting_times_chart():
 def create_average_waiting_times_chart():
     """Create a chart showing average waiting times by hour for all offices from today at 6am local time."""
 
-    engine = create_engine("sqlite:///data/waiting_times.sqlite")
+    engine = create_engine(common.get_db_path())
     start_time = get_today_6am_utc()
 
     with Session(engine) as db:

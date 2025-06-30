@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+import common
 import random
 import requests
 import datetime
@@ -129,7 +130,7 @@ def main():
     logger.info("Starting waiting time scraper...")
     data_dir = Path("data")
     data_dir.mkdir(parents=True, exist_ok=True)
-    engine = create_engine("sqlite:///data/waiting_times.sqlite")
+    engine = create_engine(common.get_db_path())
     setup_db_once(engine)
     logger.debug("Database setup completed.")
 
