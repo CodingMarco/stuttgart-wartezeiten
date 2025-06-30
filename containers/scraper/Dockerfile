@@ -5,14 +5,14 @@ FROM python:3.13-slim
 WORKDIR /app
 
 # Copy requirements first to leverage Docker cache
-COPY src/scraper/requirements.txt .
+COPY src/scraper_api/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY src/scraper/models.py .
-COPY src/scraper/scraper_main.py .
+COPY src/scraper_api/models.py .
+COPY src/scraper_api/scraper_main.py .
 
 # Create directory for database and logs (optional, for explicit volume mounting)
 RUN mkdir -p /app/data

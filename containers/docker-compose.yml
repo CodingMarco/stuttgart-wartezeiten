@@ -24,8 +24,6 @@ services:
   #   container_name: stuttgart-api
   #   ports:
   #     - "8000:8000"
-  #   depends_on:
-  #     - scraper
   #   volumes:
   #     - ./scraper_data:/app/data:ro  # Read-only access to scraper data
   #   networks:
