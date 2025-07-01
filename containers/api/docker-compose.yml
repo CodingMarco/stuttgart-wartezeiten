@@ -4,8 +4,6 @@ services:
       context: ../../
       dockerfile: containers/api/Dockerfile
     container_name: st_wait_api
-    ports:
-      - "8000:8000"
     volumes:
       - ../scraper/scraper_data:/app/data
     environment:
