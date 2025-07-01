@@ -11,6 +11,7 @@ COPY src/scraper_api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
+COPY src/scraper_api/common.py .
 COPY src/scraper_api/models.py .
 COPY src/scraper_api/scraper_main.py .
 

@@ -1,16 +1,14 @@
 # Ignore Python cache and compiled files
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/venv/
 
 # Ignore existing database and log files
-*.sqlite
-*.log
-
-# Ignore example files
-example_response.json
+**/*.sqlite
+**/*.log
 
 # Ignore git files
 .git/
@@ -22,6 +20,4 @@ example_response.json
 *.swp
 *.swo
 
-# Ignore OS files
-.DS_Store
-Thumbs.db
+**/node_modules/

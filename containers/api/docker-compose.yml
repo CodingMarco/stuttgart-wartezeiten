@@ -1,0 +1,12 @@
+services:
+  api:
+    build:
+      context: ../../
+      dockerfile: containers/api/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../scraper/scraper_data:/app/data
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped

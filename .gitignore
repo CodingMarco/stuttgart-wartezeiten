@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,virtualenv,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,virtualenv,visualstudiocode
 
+*.sqlite
+scraper_data/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
