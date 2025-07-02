@@ -9,7 +9,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(common.get_db_path(), connect_args=connect_args)
+engine = create_engine(
+    common.get_db_path(), pool_size=30, max_overflow=30, connect_args=connect_args
+)
 
 
 def get_session():
