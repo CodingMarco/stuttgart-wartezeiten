@@ -2,18 +2,26 @@
   <v-layout>
     <v-app-bar title="Wartezeiten in stuttgarter Bürgerbüros"></v-app-bar>
 
-    <v-navigation-drawer width="340">
-      <v-date-picker
-        v-model="selectedDate"
-        :min="minDate"
-        :max="maxDate"
-        :allowed-dates="allowedDates"
-        first-day-of-week="1"
-      ></v-date-picker>
+    <!-- Desktop: Navigation drawer -->
+    <v-navigation-drawer width="340" class="d-none d-md-flex">
+      <DatePicker v-model="selectedDate" />
     </v-navigation-drawer>
 
     <v-main>
       <v-container class="fill-height">
+        <!-- Mobile: Date picker above charts -->
+        <v-row class="d-flex d-md-none mb-4">
+          <v-col cols="12">
+            <v-card>
+              <v-card-title class="text-h6">Select Date</v-card-title>
+              <v-card-text>
+                <DatePicker v-model="selectedDate" width="100%" hide-header />
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- Charts -->
         <v-row>
           <v-col v-for="office in offices" :key="office.id" cols="12" md="6">
             <WaitingTimeChart
@@ -28,29 +36,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, watchEffect } from "vue";
-import { VDatePicker } from "vuetify/components";
+import { ref, onMounted, watchEffect } from "vue";
 import type { Office } from "@/ts/interfaces";
 import { getOffices } from "@/ts/api";
 import WaitingTimeChart from "./WaitingTimeChart.vue";
-import dayjs, { Dayjs } from "dayjs";
+import DatePicker from "./DatePicker.vue";
+import dayjs from "dayjs";
 import { toIsoDate } from "@/ts/utils";
-import { useDate } from "vuetify";
 
 const selectedDate = ref(dayjs());
 const offices = ref<Office[]>([]);
-const dateAdapter = useDate();
-
-const minDate = ref("2025-06-26");
-
-// today
-const maxDate = ref(dateAdapter.format(new Date(), "YYYY-MM-DD"));
-
-function allowedDates(date: unknown) {
-  // Allow only weekdays
-  const day = dayjs(date as Dayjs).day();
-  return day !== 0 && day !== 6; // 0 = Sunday,
-}
 
 watchEffect(() => {
   console.log("Selected date todate changed:", selectedDate.value.toDate());
