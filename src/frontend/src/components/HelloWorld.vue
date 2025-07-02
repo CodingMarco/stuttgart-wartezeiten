@@ -1,14 +1,17 @@
 <template>
   <v-layout>
-    <v-app-bar title="Wartezeiten in stuttgarter Bürgerbüros"></v-app-bar>
+    <v-app-bar
+      title="Wartezeiten in stuttgarter Bürgerbüros"
+      class="position-fixed"
+    ></v-app-bar>
 
     <!-- Desktop: Navigation drawer -->
-    <v-navigation-drawer width="340" class="d-none d-md-flex">
+    <v-navigation-drawer width="330" class="d-none d-md-flex position-fixed">
       <DatePicker v-model="selectedDate" />
     </v-navigation-drawer>
 
     <v-main>
-      <v-container class="fill-height">
+      <v-container class="fill-height pt-0">
         <!-- Mobile: Date picker above charts -->
         <v-row class="d-flex d-md-none mb-4">
           <v-col cols="12">

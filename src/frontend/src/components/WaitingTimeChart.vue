@@ -54,6 +54,9 @@ Chart.register(
   CategoryScale
 );
 
+Chart.defaults.color = "#FFF";
+Chart.defaults.font.size = 16;
+
 const props = defineProps<{
   office: Office;
   selectedDate: Date;
@@ -79,36 +82,59 @@ const waitingTime = computed(
   () => waitingTimesCache.value[selectedIsoDate.value] || []
 );
 
-const chartOptions = ref<ChartOptions>({
+const gridOptions = ref({
+  display: true,
+  color: "rgba(255, 255, 255, 0.2)",
+});
+
+const chartOptions = ref<ChartOptions<"line">>({
   responsive: true,
+  animation: false,
   borderColor: "#FFF",
-  plugins: {
-    legend: {
-      display: true,
-      position: "top",
-    },
-  },
   scales: {
     x: {
       type: "time",
       time: {
-        tooltipFormat: "hh:mm",
+        tooltipFormat: "HH:mm",
+        unit: "minute",
+        round: "minute",
+        displayFormats: {
+          minute: "HH:mm",
+        },
+      },
+      ticks: {
+        source: "auto",
+        callback: function (value: any) {
+          const date = new Date(value);
+          const minutes = date.getMinutes();
+          // Only show ticks at 00, 15, 30, 45 minutes
+          if (minutes % 15 === 0) {
+            return date.toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            });
+          }
+          return null;
+        },
       },
       title: {
         display: true,
-        text: "Date",
+        text: "Uhrzeit",
       },
+      grid: gridOptions.value,
     },
     y: {
       title: {
         display: true,
-        text: "Waiting Time (minutes)",
+        text: "Wartezeit",
       },
+      grid: gridOptions.value,
     },
   },
 });
 
-const chartData = computed<ChartData>(() => ({
+const chartData = computed<ChartData<"line">>(() => ({
   labels: [],
   datasets: [
     {
@@ -120,6 +146,7 @@ const chartData = computed<ChartData>(() => ({
       borderColor: "rgba(75, 192, 192, 1)",
       backgroundColor: "rgba(75, 192, 192, 0.2)",
       pointStyle: false,
+      stepped: "before",
     },
   ],
 }));
