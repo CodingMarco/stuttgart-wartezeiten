@@ -1,7 +1,7 @@
 <template>
   <v-layout>
     <v-app-bar
-      title="Wartezeiten in stuttgarter Bürgerbüros"
+      title="Wartezeiten in Stuttgarter Bürgerbüros"
       class="position-fixed"
     ></v-app-bar>
 
