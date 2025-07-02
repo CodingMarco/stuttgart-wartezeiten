@@ -31,7 +31,7 @@
             :key="office.id"
             cols="12"
             md="6"
-            class="px-0"
+            class="px-0 px-md-3"
           >
             <WaitingTimeChart
               :office="office"

@@ -36,6 +36,7 @@ import {
   CategoryScale,
   Tooltip,
 } from "chart.js";
+import zoomPlugin from "chartjs-plugin-zoom";
 import { toIsoDate } from "@/ts/utils";
 import "chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm";
 import type { Dayjs } from "dayjs";
@@ -51,7 +52,8 @@ Chart.register(
   LineElement,
   TimeScale,
   Tooltip,
-  CategoryScale
+  CategoryScale,
+  zoomPlugin
 );
 
 Chart.defaults.color = "#FFF";
@@ -100,6 +102,22 @@ const chartOptions = ref<ChartOptions<"line">>({
             props.statuses[context.parsed.y] || context.parsed.y;
           return `Wartezeit: ${statusLabel}`;
         },
+      },
+    },
+    zoom: {
+      pan: {
+        enabled: true,
+        mode: "x",
+      },
+      zoom: {
+        wheel: {
+          enabled: true,
+          modifierKey: "ctrl",
+        },
+        pinch: {
+          enabled: true,
+        },
+        mode: "x",
       },
     },
   },
