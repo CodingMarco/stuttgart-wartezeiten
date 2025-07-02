@@ -1,10 +1,14 @@
 export interface Office {
-    label: string;
-    url: string;
-    id: number;
+  label: string;
+  url: string;
+  id: number;
 }
 
 export interface StatusRecord {
-    captured_at: string;
-    status_id: number;
+  captured_at: string;
+  status_id: number;
+}
+
+export interface Statuses {
+  [id: string]: string;
 }

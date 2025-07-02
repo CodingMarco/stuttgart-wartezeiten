@@ -1,4 +1,4 @@
-import type { Office, StatusRecord } from "./interfaces";
+import type { Office, StatusRecord, Statuses } from "./interfaces";
 import { toIsoDate } from "./utils";
 
 const BASE_URL = "https://st-wait-api.codingmarco.de";
@@ -21,4 +21,8 @@ export async function getWaitingTimes(officeId: number, date: Date | string) {
   return fetchJsonFromApi<StatusRecord[]>(
     `waiting_times/${officeId}/${dateString}`
   );
+}
+
+export async function getStatuses(): Promise<Statuses> {
+  return fetchJsonFromApi<Statuses>("/statuses");
 }

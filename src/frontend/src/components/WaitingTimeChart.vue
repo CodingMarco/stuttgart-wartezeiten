@@ -24,7 +24,7 @@
 import { ref, watch, computed } from "vue";
 import { useDate } from "vuetify";
 import { getWaitingTimes } from "@/ts/api";
-import type { Office, StatusRecord } from "@/ts/interfaces";
+import type { Office, StatusRecord, Statuses } from "@/ts/interfaces";
 import { Line } from "vue-chartjs";
 import type { ChartOptions, ChartData } from "chart.js";
 import {
@@ -60,6 +60,7 @@ Chart.defaults.font.size = 16;
 const props = defineProps<{
   office: Office;
   selectedDate: Date;
+  statuses: Statuses;
 }>();
 
 const officeId = computed(() => props.office.id);
@@ -91,6 +92,17 @@ const chartOptions = ref<ChartOptions<"line">>({
   responsive: true,
   animation: false,
   borderColor: "#FFF",
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          const statusLabel =
+            props.statuses[context.parsed.y] || context.parsed.y;
+          return `Wartezeit: ${statusLabel}`;
+        },
+      },
+    },
+  },
   scales: {
     x: {
       type: "time",
@@ -135,10 +147,9 @@ const chartOptions = ref<ChartOptions<"line">>({
 });
 
 const chartData = computed<ChartData<"line">>(() => ({
-  labels: [],
   datasets: [
     {
-      label: "Waiting Time",
+      label: "Wartezeit",
       data: waitingTime.value.map((record) => ({
         x: (dayjs.utc(record.captured_at) as Dayjs).valueOf(),
         y: record.status_id,

@@ -30,6 +30,7 @@
             <WaitingTimeChart
               :office="office"
               :selected-date="selectedDate.toDate()"
+              :statuses="statuses"
             />
           </v-col>
         </v-row>
@@ -40,8 +41,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from "vue";
-import type { Office } from "@/ts/interfaces";
-import { getOffices } from "@/ts/api";
+import type { Office, Statuses } from "@/ts/interfaces";
+import { getOffices, getStatuses } from "@/ts/api";
 import WaitingTimeChart from "./WaitingTimeChart.vue";
 import DatePicker from "./DatePicker.vue";
 import dayjs from "dayjs";
@@ -49,6 +50,7 @@ import { toIsoDate } from "@/ts/utils";
 
 const selectedDate = ref(dayjs());
 const offices = ref<Office[]>([]);
+const statuses = ref<Statuses>({});
 
 watchEffect(() => {
   console.log("Selected date todate changed:", selectedDate.value.toDate());
@@ -57,5 +59,6 @@ watchEffect(() => {
 
 onMounted(async () => {
   offices.value = await getOffices();
+  statuses.value = await getStatuses();
 });
 </script>
