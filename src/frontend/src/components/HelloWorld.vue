@@ -14,16 +14,14 @@
 
     <v-main>
       <v-container class="fill-height">
-        <div>
-          <div class="d-flex flex-wrap ga-md-4">
+        <v-row>
+          <v-col v-for="office in offices" :key="office.id" cols="12" md="6">
             <WaitingTimeChart
-              v-for="office in offices"
-              :key="office.id"
               :office="office"
               :selected-date="selectedDate.toDate()"
             />
-          </div>
-        </div>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
   </v-layout>
