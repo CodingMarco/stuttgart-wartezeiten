@@ -13,7 +13,7 @@
     <v-main>
       <v-container class="fill-height pt-0">
         <!-- Mobile: Date picker above charts -->
-        <v-row class="d-flex d-md-none mb-4">
+        <v-row class="d-flex d-md-none mb-4 mt-4">
           <v-col cols="12">
             <v-card>
               <v-card-title class="text-h6">Select Date</v-card-title>
