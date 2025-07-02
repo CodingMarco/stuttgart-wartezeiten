@@ -40,25 +40,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect } from "vue";
+import { ref, onMounted } from "vue";
 import type { Office, Statuses } from "@/ts/interfaces";
 import { getOffices, getStatuses } from "@/ts/api";
 import WaitingTimeChart from "./WaitingTimeChart.vue";
 import DatePicker from "./DatePicker.vue";
 import dayjs from "dayjs";
-import { toIsoDate } from "@/ts/utils";
 
 const selectedDate = ref(dayjs());
-const offices = ref<Office[]>([]);
 const statuses = ref<Statuses>({});
-
-watchEffect(() => {
-  console.log("Selected date todate changed:", selectedDate.value.toDate());
-  console.log("Selected ISO date:", toIsoDate(selectedDate.value.toDate()));
-});
+const offices = ref<Office[]>([]);
 
 onMounted(async () => {
-  offices.value = await getOffices();
   statuses.value = await getStatuses();
+  offices.value = await getOffices();
 });
 </script>

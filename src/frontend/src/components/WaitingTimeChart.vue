@@ -142,6 +142,14 @@ const chartOptions = ref<ChartOptions<"line">>({
         text: "Wartezeit",
       },
       grid: gridOptions.value,
+      min: 0,
+      max: Object.keys(props.statuses).length - 1,
+      ticks: {
+        stepSize: 1,
+        callback: function (value: any) {
+          return props.statuses[value] || "";
+        },
+      },
     },
   },
 });
