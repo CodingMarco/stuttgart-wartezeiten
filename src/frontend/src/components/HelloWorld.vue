@@ -1,43 +1,65 @@
 <template>
-  <v-container class="fill-height" max-width="900">
-    <div>
-      <div class="mb-8 text-center">
-        <h1 class="text-h2 font-weight-bold">
-          Stuttgart Bürgerbüro Wartezeiten
-        </h1>
-      </div>
+  <v-layout>
+    <v-app-bar title="Wartezeiten in stuttgarter Bürgerbüros"></v-app-bar>
 
-      <v-date-picker v-model="selectedDate"></v-date-picker>
+    <v-navigation-drawer width="340">
+      <v-date-picker
+        v-model="selectedDate"
+        :min="minDate"
+        :max="maxDate"
+        :allowed-dates="allowedDates"
+        first-day-of-week="1"
+      ></v-date-picker>
+    </v-navigation-drawer>
 
-      <div class="d-flex ga-md flex-wrap">
-        {{ offices }}
-      </div>
-    </div>
-  </v-container>
+    <v-main>
+      <v-container class="fill-height">
+        <div>
+          <div class="d-flex flex-wrap ga-md-4">
+            <WaitingTimeChart
+              v-for="office in offices"
+              :key="office.id"
+              :office="office"
+              :selected-date="selectedDate.toDate()"
+            />
+          </div>
+        </div>
+      </v-container>
+    </v-main>
+  </v-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, watchEffect, onMounted } from "vue";
+import { ref, onMounted, watch, watchEffect } from "vue";
 import { VDatePicker } from "vuetify/components";
+import type { Office } from "@/ts/interfaces";
+import { getOffices } from "@/ts/api";
+import WaitingTimeChart from "./WaitingTimeChart.vue";
+import dayjs, { Dayjs } from "dayjs";
+import { toIsoDate } from "@/ts/utils";
 import { useDate } from "vuetify";
 
+const selectedDate = ref(dayjs());
+const offices = ref<Office[]>([]);
 const dateAdapter = useDate();
 
-const selectedDate = ref(new Date());
+const minDate = ref("2025-06-26");
 
-const offices = ref([]);
+// today
+const maxDate = ref(dateAdapter.format(new Date(), "YYYY-MM-DD"));
 
-onMounted(async () => {
-  // Fetch the office data from the API
-  try {
-    const response = await fetch("http://127.0.0.1:8000/offices");
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    offices.value = await response.json();
-  } catch (error) {
-    console.error("Failed to fetch offices:", error);
-  }
+function allowedDates(date: unknown) {
+  // Allow only weekdays
+  const day = dayjs(date as Dayjs).day();
+  return day !== 0 && day !== 6; // 0 = Sunday,
+}
+
+watchEffect(() => {
+  console.log("Selected date todate changed:", selectedDate.value.toDate());
+  console.log("Selected ISO date:", toIsoDate(selectedDate.value.toDate()));
 });
 
+onMounted(async () => {
+  offices.value = await getOffices();
+});
 </script>
