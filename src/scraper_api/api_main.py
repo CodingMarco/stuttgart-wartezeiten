@@ -34,6 +34,15 @@ async def get_offices(session: SessionDep):
     return offices
 
 
+@app.get("/statuses")
+async def get_statuses(session: SessionDep):
+    """
+    Retrieve a list of waiting time statuses.
+    """
+    statuses = session.query(Status).all()
+    return {status.id: status.meaning for status in statuses}
+
+
 @app.get("/all_waiting_times/{date}")
 async def get_waiting_times(date: str, session: SessionDep):
     """
