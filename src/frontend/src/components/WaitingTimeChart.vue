@@ -7,7 +7,7 @@
     <Line
       :data="chartData"
       :options="chartOptions"
-      class="w-full h-64 px-4"
+      class="w-full h-64 px-md-4"
       :key="selectedIsoDate"
       v-if="dataAvailable"
     />
@@ -22,7 +22,7 @@
 
 <script lang="ts" setup>
 import { ref, watch, computed } from "vue";
-import { useDate } from "vuetify";
+import { useDisplay } from "vuetify";
 import { getWaitingTimes } from "@/ts/api";
 import type { Office, StatusRecord, Statuses } from "@/ts/interfaces";
 import { Line } from "vue-chartjs";
@@ -43,7 +43,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
-const dateAdapter = useDate();
+const { mobile } = useDisplay();
 
 Chart.register(
   LinearScale,
@@ -131,14 +131,14 @@ const chartOptions = ref<ChartOptions<"line">>({
         },
       },
       title: {
-        display: true,
+        display: !mobile.value,
         text: "Uhrzeit",
       },
       grid: gridOptions.value,
     },
     y: {
       title: {
-        display: true,
+        display: !mobile.value,
         text: "Wartezeit",
       },
       grid: gridOptions.value,
@@ -146,6 +146,7 @@ const chartOptions = ref<ChartOptions<"line">>({
       max: Object.keys(props.statuses).length - 1,
       ticks: {
         stepSize: 1,
+        includeBounds: true,
         callback: function (value: any) {
           return props.statuses[value] || "";
         },

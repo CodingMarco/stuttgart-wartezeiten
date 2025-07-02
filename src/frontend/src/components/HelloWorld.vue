@@ -13,7 +13,7 @@
     <v-main>
       <v-container class="fill-height pt-0">
         <!-- Mobile: Date picker above charts -->
-        <v-row class="d-flex d-md-none mb-4 mt-4">
+        <v-row class="d-flex d-md-none mt-4">
           <v-col cols="12">
             <v-card>
               <v-card-title class="text-h6">Select Date</v-card-title>
@@ -26,7 +26,13 @@
 
         <!-- Charts -->
         <v-row>
-          <v-col v-for="office in offices" :key="office.id" cols="12" md="6">
+          <v-col
+            v-for="office in offices"
+            :key="office.id"
+            cols="12"
+            md="6"
+            class="px-0"
+          >
             <WaitingTimeChart
               :office="office"
               :selected-date="selectedDate.toDate()"
