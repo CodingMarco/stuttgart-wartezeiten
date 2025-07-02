@@ -9,3 +9,9 @@ services:
     environment:
       - PYTHONPATH=/app
     restart: unless-stopped
+    networks:
+      web_services:
+
+networks:
+  web_services:
+    external: true
