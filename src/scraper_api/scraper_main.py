@@ -134,6 +134,8 @@ def main():
     setup_db_once(engine)
     logger.debug("Database setup completed.")
 
+    previous_all_closed = None
+
     while True:
         wait_for_next_minute()
 
@@ -143,18 +145,30 @@ def main():
 
         try:
             data = fetch_and_check_json()
+            current_all_closed = all_offices_closed(data)
 
-            if all_offices_closed(data):
-                logger.debug("All offices are closed, skipping data ingestion.")
-                continue
+            should_store = False
+            if previous_all_closed is None:  # First run
+                should_store = True
+            elif previous_all_closed != current_all_closed:  # State change
+                should_store = True
+            elif not current_all_closed:  # Normal operation
+                should_store = True
+            else:
+                pass  # All offices closed and no state change - skip
 
-            with Session(engine) as db:
-                insert_data(db, data)
+            if should_store:
+                with Session(engine) as db:
+                    insert_data(db, data)
+                logger.debug("Data ingestion completed.")
+
+            # Update previous state
+            previous_all_closed = current_all_closed
 
         except Exception as e:
             logger.error(f"Error during data ingestion: {e}")
 
-        logger.debug("Data ingestion completed, waiting for the next minute...")
+        logger.debug("Waiting for the next minute...")
 
 
 if __name__ == "__main__":
