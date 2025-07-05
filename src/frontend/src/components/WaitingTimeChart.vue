@@ -1,8 +1,11 @@
 <template>
   <v-sheet class="border-md rounded-lg">
-    <h4 class="text-h5 font-weight-bold mb-4 bg-surface-light px-4 py-2">
-      Bürgerbüro {{ officeLabel }}
-    </h4>
+    <div class="d-flex flex-row align-baseline bg-surface-light mb-4 px-4 py-2">
+      <h4 class="text-h5 font-weight-bold mr-3">
+        Bürgerbüro {{ officeLabel }}
+      </h4>
+      <span>(<a :href="office.url" target="_blank">info</a>)</span>
+    </div>
 
     <Line
       :data="chartData"
